@@ -6,7 +6,12 @@ import Data.Complex
 import Control.Applicative
 import Data.List (foldl')
 
+import Control.Arrow
+
 data SellmeierMat = SellmeierMat Double Double Double
+
+--newtype OpticLayer = OpticLayer (Double -> M.Matrix (Complex Double))
+
 
 fixmat :: Complex Double -> a -> Complex Double
 fixmat n = const n
@@ -21,7 +26,7 @@ optlayer nf t w = M.fromLists [[cos theta, (0 :+ 1) * sin theta / n],
            n = nf w
            theta = (2 * pi * t / w :+ 0) * n  
 
-tmm :: (RealFloat c, Foldable t, Applicative t) => Complex c -> Complex c -> t (a -> M.Matrix (Complex c)) -> a -> c
+tmm :: (RealFloat c, Foldable t, Applicative t) => Complex c -> Complex c -> t (Double -> M.Matrix (Complex c)) -> Double -> c
 tmm nL nR layers = realPart . (<*>) (*) conjugate . r . flip M.multStd bR . foldl' M.multStd bLinv . (<*>) layers . pure
     where
         bLinv = fmap (0.5*) $ M.fromLists [[1,(-1/nL)],[1,1/nL]]
